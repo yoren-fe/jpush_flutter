@@ -18,7 +18,10 @@
             </intent-filter>
         </receiver>
 
-        <receiver android:name="com.jiguang.jpush.JPushEventReceiver">
+        <receiver
+            android:name="com.jiguang.jpush.JPushEventReceiver"
+            android:enabled="true"
+            android:exported="false">
             <intent-filter>
                 <action android:name="cn.jpush.android.intent.RECEIVE_MESSAGE" />
                 <category android:name="${applicationId}" />
