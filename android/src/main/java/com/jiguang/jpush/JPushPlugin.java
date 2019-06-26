@@ -45,7 +45,7 @@ public class JPushPlugin implements MethodCallHandler {
     private List<Result> getRidCache;
 
     private final Registrar registrar;
-    private final MethodChannel channel;
+    public final MethodChannel channel;
     public final Map<Integer, Result> callbackMap;
     private int sequence;
 
