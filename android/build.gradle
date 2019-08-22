@@ -8,7 +8,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.4.1'
+        classpath 'com.android.tools.build:gradle:3.5.0'
     }
 }
 
@@ -34,10 +34,10 @@ android {
 }
 
 dependencies {
-    implementation 'cn.jiguang.sdk:jpush:3.3.2'
-    implementation 'cn.jiguang.sdk:jcore:2.0.1'
-    releaseImplementation "cn.jiguang.sdk.plugin:xiaomi:3.3.2"
-    releaseImplementation "cn.jiguang.sdk.plugin:huawei:3.3.2"
-    releaseImplementation "cn.jiguang.sdk.plugin:meizu:3.3.2"
-    releaseImplementation "cn.jiguang.sdk.plugin:oppo:3.3.2"
+    implementation 'cn.jiguang.sdk:jpush:3.3.4'
+    implementation 'cn.jiguang.sdk:jcore:2.1.2'
+    releaseImplementation "cn.jiguang.sdk.plugin:xiaomi:3.3.4"
+    releaseImplementation "cn.jiguang.sdk.plugin:huawei:3.3.4"
+    releaseImplementation "cn.jiguang.sdk.plugin:meizu:3.3.4"
+    releaseImplementation "cn.jiguang.sdk.plugin:oppo:3.3.4"
 }
