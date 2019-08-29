@@ -41,4 +41,5 @@ dependencies {
     releaseImplementation "cn.jiguang.sdk.plugin:meizu:3.3.4"
     releaseImplementation "cn.jiguang.sdk.plugin:oppo:3.3.4"
     releaseImplementation "cn.jiguang.sdk.plugin:vivo:3.3.4"
+    implementation 'androidx.annotation:annotation:1.1.0'
 }

@@ -4,6 +4,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
+import android.util.SparseArray;
+
+import androidx.annotation.NonNull;
 
 import org.json.JSONObject;
 
@@ -37,7 +40,7 @@ public class JPushPlugin implements MethodCallHandler {
     }
 
     public static JPushPlugin instance;
-    static List<Map<String, Object>> openNotificationCache = new ArrayList<>();
+    private static List<Map<String, Object>> openNotificationCache = new ArrayList<>();
 
     private boolean dartIsReady = false;
     private boolean jpushDidinit = false;
@@ -46,14 +49,14 @@ public class JPushPlugin implements MethodCallHandler {
 
     private final Registrar registrar;
     public final MethodChannel channel;
-    public final Map<Integer, Result> callbackMap;
+    final SparseArray<Result> callbackMap;
     private int sequence;
 
     private JPushPlugin(Registrar registrar, MethodChannel channel) {
 
         this.registrar = registrar;
         this.channel = channel;
-        this.callbackMap = new HashMap<>();
+        this.callbackMap = new SparseArray<>();
         this.sequence = 0;
         this.getRidCache = new ArrayList<>();
 
@@ -62,43 +65,60 @@ public class JPushPlugin implements MethodCallHandler {
 
 
     @Override
-    public void onMethodCall(MethodCall call, Result result) {
-        if (call.method.equals("getPlatformVersion")) {
-            result.success("Android " + android.os.Build.VERSION.RELEASE);
-        } else if (call.method.equals("setup")) {
-            setup(call, result);
-        } else if (call.method.equals("setTags")) {
-            setTags(call, result);
-        } else if (call.method.equals("cleanTags")) {
-            cleanTags(call, result);
-        } else if (call.method.equals("addTags")) {
-            addTags(call, result);
-        } else if (call.method.equals("deleteTags")) {
-            deleteTags(call, result);
-        } else if (call.method.equals("getAllTags")) {
-            getAllTags(call, result);
-        } else if (call.method.equals("setAlias")) {
-            setAlias(call, result);
-        } else if (call.method.equals("deleteAlias")) {
-            deleteAlias(call, result);
-        } else if (call.method.equals("stopPush")) {
-            stopPush(call, result);
-        } else if (call.method.equals("resumePush")) {
-            resumePush(call, result);
-        } else if (call.method.equals("clearAllNotifications")) {
-            clearAllNotifications(call, result);
-        } else if (call.method.equals("getLaunchAppNotification")) {
-            getLaunchAppNotification(call, result);
-        } else if (call.method.equals("getRegistrationID")) {
-            getRegistrationID(call, result);
-        } else if (call.method.equals("sendLocalNotification")) {
-            sendLocalNotification(call, result);
-        } else {
-            result.notImplemented();
+    public void onMethodCall(@NonNull MethodCall call, @NonNull Result result) {
+        switch (call.method) {
+            case "getPlatformVersion":
+                result.success("Android " + android.os.Build.VERSION.RELEASE);
+                break;
+            case "setup":
+                setup(call, result);
+                break;
+            case "setTags":
+                setTags(call, result);
+                break;
+            case "cleanTags":
+                cleanTags(call, result);
+                break;
+            case "addTags":
+                addTags(call, result);
+                break;
+            case "deleteTags":
+                deleteTags(call, result);
+                break;
+            case "getAllTags":
+                getAllTags(call, result);
+                break;
+            case "setAlias":
+                setAlias(call, result);
+                break;
+            case "deleteAlias":
+                deleteAlias(call, result);
+                break;
+            case "stopPush":
+                stopPush(call, result);
+                break;
+            case "resumePush":
+                resumePush(call, result);
+                break;
+            case "clearAllNotifications":
+                clearAllNotifications(call, result);
+                break;
+            case "getLaunchAppNotification":
+                getLaunchAppNotification(call, result);
+                break;
+            case "getRegistrationID":
+                getRegistrationID(call, result);
+                break;
+            case "sendLocalNotification":
+                sendLocalNotification(call, result);
+                break;
+            default:
+                result.notImplemented();
+                break;
         }
     }
 
-    public void setup(MethodCall call, Result result) {
+    private void setup(MethodCall call, Result result) {
         HashMap<String, Object> map = call.arguments();
         boolean debug = (boolean) map.get("debug");
         JPushInterface.setDebugMode(debug);
@@ -114,7 +134,7 @@ public class JPushPlugin implements MethodCallHandler {
         scheduleCache();
     }
 
-    public void scheduleCache() {
+    private void scheduleCache() {
         if (dartIsReady) {
             // try to shedule notifcation cache
             for (Map<String, Object> notification : JPushPlugin.openNotificationCache) {
@@ -124,7 +144,7 @@ public class JPushPlugin implements MethodCallHandler {
         }
         String rid = JPushInterface.getRegistrationID(registrar.context());
         boolean ridAvailable = rid != null && !rid.isEmpty();
-        if (ridAvailable && dartIsReady) {
+        if (ridAvailable && dartIsReady && instance != null) {
             // try to schedule get rid cache
             for (Result res : JPushPlugin.instance.getRidCache) {
                 res.success(rid);
@@ -133,7 +153,7 @@ public class JPushPlugin implements MethodCallHandler {
         }
     }
 
-    public void setTags(MethodCall call, Result result) {
+    private void setTags(MethodCall call, Result result) {
         List<String> tagList = call.arguments();
         Set<String> tags = new HashSet<>(tagList);
         sequence += 1;
@@ -141,13 +161,13 @@ public class JPushPlugin implements MethodCallHandler {
         JPushInterface.setTags(registrar.context(), sequence, tags);
     }
 
-    public void cleanTags(MethodCall call, Result result) {
+    private void cleanTags(MethodCall call, Result result) {
         sequence += 1;
         callbackMap.put(sequence, result);
         JPushInterface.cleanTags(registrar.context(), sequence);
     }
 
-    public void addTags(MethodCall call, Result result) {
+    private void addTags(MethodCall call, Result result) {
         List<String> tagList = call.arguments();
         Set<String> tags = new HashSet<>(tagList);
         sequence += 1;
@@ -155,7 +175,7 @@ public class JPushPlugin implements MethodCallHandler {
         JPushInterface.addTags(registrar.context(), sequence, tags);
     }
 
-    public void deleteTags(MethodCall call, Result result) {
+    private void deleteTags(MethodCall call, Result result) {
         List<String> tagList = call.arguments();
         Set<String> tags = new HashSet<>(tagList);
         sequence += 1;
@@ -163,43 +183,43 @@ public class JPushPlugin implements MethodCallHandler {
         JPushInterface.deleteTags(registrar.context(), sequence, tags);
     }
 
-    public void getAllTags(MethodCall call, Result result) {
+    private void getAllTags(MethodCall call, Result result) {
         sequence += 1;
         callbackMap.put(sequence, result);
         JPushInterface.getAllTags(registrar.context(), sequence);
     }
 
-    public void setAlias(MethodCall call, Result result) {
+    private void setAlias(MethodCall call, Result result) {
         String alias = call.arguments();
         sequence += 1;
         callbackMap.put(sequence, result);
         JPushInterface.setAlias(registrar.context(), sequence, alias);
     }
 
-    public void deleteAlias(MethodCall call, Result result) {
+    private void deleteAlias(MethodCall call, Result result) {
         String alias = call.arguments();
         sequence += 1;
         callbackMap.put(sequence, result);
         JPushInterface.deleteAlias(registrar.context(), sequence);
     }
 
-    public void stopPush(MethodCall call, Result result) {
+    private void stopPush(MethodCall call, Result result) {
         JPushInterface.stopPush(registrar.context());
     }
 
-    public void resumePush(MethodCall call, Result result) {
+    private void resumePush(MethodCall call, Result result) {
         JPushInterface.resumePush(registrar.context());
     }
 
-    public void clearAllNotifications(MethodCall call, Result result) {
+    private void clearAllNotifications(MethodCall call, Result result) {
         JPushInterface.clearAllNotifications(registrar.context());
     }
 
-    public void getLaunchAppNotification(MethodCall call, Result result) {
+    private void getLaunchAppNotification(MethodCall call, Result result) {
 
     }
 
-    public void getRegistrationID(MethodCall call, Result result) {
+    private void getRegistrationID(MethodCall call, Result result) {
 
         String rid = JPushInterface.getRegistrationID(registrar.context());
         if (rid == null || rid.isEmpty()) {
@@ -210,26 +230,27 @@ public class JPushPlugin implements MethodCallHandler {
     }
 
 
-    public void sendLocalNotification(MethodCall call, Result result) {
+    private void sendLocalNotification(@NonNull MethodCall call, @NonNull Result result) {
         try {
             HashMap<String, Object> map = call.arguments();
+            if (map != null) {
+                JPushLocalNotification ln = new JPushLocalNotification();
+                ln.setBuilderId((Integer) map.get("buildId"));
+                ln.setNotificationId((Integer) map.get("id"));
+                ln.setTitle((String) map.get("title"));
+                ln.setContent((String) map.get("content"));
+                HashMap<String, Object> extra = (HashMap<String, Object>) map.get("extra");
 
-            JPushLocalNotification ln = new JPushLocalNotification();
-            ln.setBuilderId((Integer) map.get("buildId"));
-            ln.setNotificationId((Integer) map.get("id"));
-            ln.setTitle((String) map.get("title"));
-            ln.setContent((String) map.get("content"));
-            HashMap<String, Object> extra = (HashMap<String, Object>) map.get("extra");
+                if (extra != null) {
+                    JSONObject json = new JSONObject(extra);
+                    ln.setExtras(json.toString());
+                }
 
-            if (extra != null) {
-                JSONObject json = new JSONObject(extra);
-                ln.setExtras(json.toString());
+                long date = (long) map.get("fireTime");
+                ln.setBroadcastTime(date);
+
+                JPushInterface.addLocalNotification(registrar.context(), ln);
             }
-
-            long date = (long) map.get("fireTime");
-            ln.setBroadcastTime(date);
-
-            JPushInterface.addLocalNotification(registrar.context(), ln);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -250,18 +271,24 @@ public class JPushPlugin implements MethodCallHandler {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
-            if (action.equals(JPushInterface.ACTION_REGISTRATION_ID)) {
-                String rId = intent.getStringExtra(JPushInterface.EXTRA_REGISTRATION_ID);
-                Log.d("JPushPlugin", "on get registration");
-                Log.d("JPushPlugin", JPushPlugin.instance.getRidCache.toString());
-                JPushPlugin.transmitReceiveRegistrationId(rId);
-            } else if (action.equals(JPushInterface.ACTION_MESSAGE_RECEIVED)) {
-                handlingMessageReceive(intent);
-            } else if (action.equals(JPushInterface.ACTION_NOTIFICATION_RECEIVED)) {
-                handlingNotificationReceive(context, intent);
-            } else if (action.equals(JPushInterface.ACTION_NOTIFICATION_OPENED)) {
-                instance.dartIsReady = AppUtils.isAppForground(context);
-                handlingNotificationOpen(context, intent);
+            if (action != null) {
+                switch (action) {
+                    case JPushInterface.ACTION_REGISTRATION_ID:
+                        JPushPlugin.transmitReceiveRegistrationId();
+                        break;
+                    case JPushInterface.ACTION_MESSAGE_RECEIVED:
+                        handlingMessageReceive(intent);
+                        break;
+                    case JPushInterface.ACTION_NOTIFICATION_RECEIVED:
+                        handlingNotificationReceive(intent);
+                        break;
+                    case JPushInterface.ACTION_NOTIFICATION_OPENED:
+                        if (instance != null) {
+                            instance.dartIsReady = AppUtils.isAppForground(context);
+                        }
+                        handlingNotificationOpen(context, intent);
+                        break;
+                }
             }
         }
 
@@ -285,7 +312,7 @@ public class JPushPlugin implements MethodCallHandler {
             }
         }
 
-        private void handlingNotificationReceive(Context context, Intent intent) {
+        private void handlingNotificationReceive(Intent intent) {
             String title = intent.getStringExtra(JPushInterface.EXTRA_NOTIFICATION_TITLE);
             String alert = intent.getStringExtra(JPushInterface.EXTRA_ALERT);
             Map<String, Object> extras = getNotificationExtras(intent);
@@ -293,7 +320,10 @@ public class JPushPlugin implements MethodCallHandler {
         }
 
         private Map<String, Object> getNotificationExtras(Intent intent) {
-            Map<String, Object> extrasMap = new HashMap<String, Object>();
+            if (intent.getExtras() == null) {
+                return new HashMap<>();
+            }
+            Map<String, Object> extrasMap = new HashMap<>();
             for (String key : intent.getExtras().keySet()) {
                 if (!IGNORED_EXTRAS_KEYS.contains(key)) {
                     if (key.equals(JPushInterface.EXTRA_NOTIFICATION_ID)) {
@@ -309,7 +339,7 @@ public class JPushPlugin implements MethodCallHandler {
     }
 
 
-    static void transmitMessageReceive(String message, Map<String, Object> extras) {
+    private static void transmitMessageReceive(String message, Map<String, Object> extras) {
         if (instance == null) {
             return;
         }
@@ -320,7 +350,7 @@ public class JPushPlugin implements MethodCallHandler {
         JPushPlugin.instance.channel.invokeMethod("onReceiveMessage", msg);
     }
 
-    static void transmitNotificationOpen(String title, String alert, Map<String, Object> extras) {
+    private static void transmitNotificationOpen(String title, String alert, Map<String, Object> extras) {
         Map<String, Object> notification = new HashMap<>();
         notification.put("title", title);
         notification.put("alert", alert);
@@ -343,7 +373,7 @@ public class JPushPlugin implements MethodCallHandler {
 
     }
 
-    static void transmitNotificationReceive(String title, String alert, Map<String, Object> extras) {
+    private static void transmitNotificationReceive(String title, String alert, Map<String, Object> extras) {
         if (instance == null) {
             return;
         }
@@ -355,7 +385,7 @@ public class JPushPlugin implements MethodCallHandler {
         JPushPlugin.instance.channel.invokeMethod("onReceiveNotification", notification);
     }
 
-    static void transmitReceiveRegistrationId(String rId) {
+    private static void transmitReceiveRegistrationId() {
         if (instance == null) {
             return;
         }
