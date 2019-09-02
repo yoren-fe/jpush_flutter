@@ -38,8 +38,8 @@ static NSMutableArray<FlutterResult>* getRidResults;
             binaryMessenger:[registrar messenger]];
   JPushPlugin* instance = [[JPushPlugin alloc] init];
   instance.channel = channel;
-  
-  
+
+
   [registrar addApplicationDelegate:instance];
   [registrar addMethodCallDelegate:instance channel:channel];
 }
@@ -48,20 +48,20 @@ static NSMutableArray<FlutterResult>* getRidResults;
   self = [super init];
   notificationTypes = 0;
   NSNotificationCenter *defaultCenter = [NSNotificationCenter defaultCenter];
-  
+
   [defaultCenter removeObserver:self];
-  
-  
+
+
   [defaultCenter addObserver:self
                     selector:@selector(networkConnecting:)
                         name:kJPFNetworkIsConnectingNotification
                       object:nil];
-  
+
   [defaultCenter addObserver:self
                     selector:@selector(networkRegister:)
                         name:kJPFNetworkDidRegisterNotification
                       object:nil];
-  
+
   [defaultCenter addObserver:self
                     selector:@selector(networkDidSetup:)
                         name:kJPFNetworkDidSetupNotification
@@ -186,11 +186,11 @@ static NSMutableArray<FlutterResult>* getRidResults;
 
 - (void)setTags:(FlutterMethodCall*)call result:(FlutterResult)result {
   NSSet *tagSet;
-  
+
   if (call.arguments != NULL) {
     tagSet = [NSSet setWithArray: call.arguments];
   }
-  
+
   [JPUSHService setTags:tagSet completion:^(NSInteger iResCode, NSSet *iTags, NSInteger seq) {
     if (iResCode == 0) {
       result(@{@"tags": [iTags allObjects] ?: @[]});
@@ -214,11 +214,11 @@ static NSMutableArray<FlutterResult>* getRidResults;
 
 - (void)addTags:(FlutterMethodCall*)call result:(FlutterResult)result {
   NSSet *tagSet;
-  
+
   if (call.arguments != NULL) {
     tagSet = [NSSet setWithArray:call.arguments];
   }
-  
+
   [JPUSHService addTags:tagSet completion:^(NSInteger iResCode, NSSet *iTags, NSInteger seq) {
     if (iResCode == 0) {
       result(@{@"tags": [iTags allObjects] ?: @[]});
@@ -231,11 +231,11 @@ static NSMutableArray<FlutterResult>* getRidResults;
 
 - (void)deleteTags:(FlutterMethodCall*)call result:(FlutterResult)result {
   NSSet *tagSet;
-  
+
   if (call.arguments != NULL) {
     tagSet = [NSSet setWithArray:call.arguments];
   }
-  
+
   [JPUSHService deleteTags:tagSet completion:^(NSInteger iResCode, NSSet *iTags, NSInteger seq) {
     if (iResCode == 0) {
       result(@{@"tags": [iTags allObjects] ?: @[]});
@@ -303,14 +303,14 @@ static NSMutableArray<FlutterResult>* getRidResults;
   NSLog(@"simulator can not get registrationid");
   result(@"");
 #elif TARGET_OS_IPHONE//真机
-  
-  
+
+
   if ([JPUSHService registrationID] != nil && ![[JPUSHService registrationID] isEqualToString:@""]) {
     // 如果已经成功获取 registrationID，从本地获取直接缓存
     result([JPUSHService registrationID]);
     return;
   }
-  
+
   if (_isJPushDidLogin) {// 第一次获取未登录情况
     result(@[[JPUSHService registrationID]]);
   } else {
@@ -325,31 +325,31 @@ static NSMutableArray<FlutterResult>* getRidResults;
   if (params[@"title"]) {
     content.title = params[@"title"];
   }
-  
-  if (![params[@"subtitle"] isEqualToString:@"<null>"]) {
+
+  if (params[@"subtitle"] && ![params[@"subtitle"] isEqualToString:@"<null>"]) {
     content.subtitle = params[@"subtitle"];
   }
-  
+
   if (params[@"content"]) {
     content.body = params[@"content"];
   }
-  
+
   if (params[@"badge"]) {
     content.badge = params[@"badge"];
   }
-  
-  if (![params[@"action"] isEqualToString:@"<null>"]) {
+
+  if (params[@"action"] && ![params[@"action"] isEqualToString:@"<null>"]) {
     content.action = params[@"action"];
   }
-  
-  if (![params[@"extra"] isEqualToString:@"<null>"]) {
-    content.userInfo = params[@"extra"];
-  }
-  
-  if (![params[@"sound"] isEqualToString:@"<null>"]) {
+
+    if ([params[@"extra"] isKindOfClass:[NSDictionary class]]) {
+        content.userInfo = params[@"extra"];
+    }
+
+  if (params[@"sound"] && ![params[@"sound"] isEqualToString:@"<null>"]) {
     content.sound = params[@"sound"];
   }
-  
+
   JPushNotificationTrigger *trigger = [[JPushNotificationTrigger alloc] init];
   if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 10.0) {
     if (params[@"fireTime"]) {
@@ -360,7 +360,7 @@ static NSMutableArray<FlutterResult>* getRidResults;
       trigger.timeInterval = interval;
     }
   }
-  
+
   else {
     if (params[@"fireTime"]) {
       NSNumber *date = params[@"fireTime"];
@@ -370,7 +370,7 @@ static NSMutableArray<FlutterResult>* getRidResults;
   JPushNotificationRequest *request = [[JPushNotificationRequest alloc] init];
   request.content = content;
   request.trigger = trigger;
-  
+
   if (params[@"id"]) {
     NSNumber *identify = params[@"id"];
     request.requestIdentifier = [identify stringValue];
@@ -378,7 +378,7 @@ static NSMutableArray<FlutterResult>* getRidResults;
   request.completionHandler = ^(id result) {
     NSLog(@"result");
   };
-  
+
   [JPUSHService addNotification:request];
 
   result(@[@[]]);
@@ -396,12 +396,12 @@ static NSMutableArray<FlutterResult>* getRidResults;
 
 - (BOOL)application:(UIApplication *)application
 didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-  
+
   if (launchOptions != nil) {
     _launchNotification = launchOptions[UIApplicationLaunchOptionsRemoteNotificationKey];
     _launchNotification = [self jpushFormatAPNSDic:_launchNotification.copy];
   }
-  
+
   if ([launchOptions valueForKey:UIApplicationLaunchOptionsLocalNotificationKey]) {
     UILocalNotification *localNotification = [launchOptions valueForKey:UIApplicationLaunchOptionsLocalNotificationKey];
     NSMutableDictionary *localNotificationEvent = @{}.mutableCopy;
@@ -410,7 +410,7 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     localNotificationEvent[@"extras"] = localNotification.userInfo;
     localNotificationEvent[@"fireTime"] = [NSNumber numberWithLong:[localNotification.fireDate timeIntervalSince1970] * 1000];
     localNotificationEvent[@"soundName"] = [localNotification.soundName isEqualToString:UILocalNotificationDefaultSoundName] ? @"" : localNotification.soundName;
-    
+
     if (@available(iOS 8.2, *)) {
       localNotificationEvent[@"title"] = localNotification.alertTitle;
     }
@@ -424,8 +424,8 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 }
 
 - (void)applicationDidBecomeActive:(UIApplication *)application {
-  application.applicationIconBadgeNumber = 1;
-  application.applicationIconBadgeNumber = 0;
+//  application.applicationIconBadgeNumber = 1;
+//  application.applicationIconBadgeNumber = 0;
 }
 
 - (bool)application:(UIApplication *)application
@@ -455,13 +455,13 @@ didRegisterUserNotificationSettings:(UIUserNotificationSettings *)notificationSe
 
 
 - (void)jpushNotificationCenter:(UNUserNotificationCenter *)center willPresentNotification:(UNNotification *)notification withCompletionHandler:(void (^)(NSInteger))completionHandler  API_AVAILABLE(ios(10.0)){
-  
+
   NSDictionary * userInfo = notification.request.content.userInfo;
   if([notification.request.trigger isKindOfClass:[UNPushNotificationTrigger class]]) {
     [JPUSHService handleRemoteNotification:userInfo];
     [_channel invokeMethod:@"onReceiveNotification" arguments: [self jpushFormatAPNSDic:userInfo]];
   }
-  
+
   completionHandler(notificationTypes);
 }
 
