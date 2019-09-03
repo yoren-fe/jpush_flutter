@@ -71,10 +71,10 @@ class JPush {
 
         _channel.invokeMethod('applyPushAuthority', iosSettings.toMap());
     }
-    
+
     ///
     /// 设置 Tag （会覆盖之前设置的 tags）
-    /// 
+    ///
     /// @param {Array} params = [String]
     /// @param {Function} success = ({"tags":[String]}) => {  }
     /// @param {Function} fail = ({"errorCode":int}) => {  }
@@ -86,7 +86,7 @@ class JPush {
 
     ///
     /// 清空所有 tags。
-    /// 
+    ///
     /// @param {Function} success = ({"tags":[String]}) => {  }
     /// @param {Function} fail = ({"errorCode":int}) => {  }
     ///
@@ -94,10 +94,10 @@ class JPush {
       final Map<dynamic, dynamic> result = await _channel.invokeMethod('cleanTags');
       return result;
     }
-    
+
     ///
     /// 在原有 tags 的基础上添加 tags
-    /// 
+    ///
     /// @param {Array} tags = [String]
     /// @param {Function} success = ({"tags":[String]}) => {  }
     /// @param {Function} fail = ({"errorCode":int}) => {  }
@@ -107,10 +107,10 @@ class JPush {
       final Map<dynamic, dynamic> result = await _channel.invokeMethod('addTags', tags);
       return result;
     }
-    
+
     ///
     /// 删除指定的 tags
-    /// 
+    ///
     /// @param {Array} tags = [String]
     /// @param {Function} success = ({"tags":[String]}) => {  }
     /// @param {Function} fail = ({"errorCode":int}) => {  }
@@ -119,10 +119,10 @@ class JPush {
       final Map<dynamic, dynamic> result = await _channel.invokeMethod('deleteTags', tags);
       return result;
     }
-    
+
     ///
     /// 获取所有当前绑定的 tags
-    /// 
+    ///
     /// @param {Function} success = ({"tags":[String]}) => {  }
     /// @param {Function} fail = ({"errorCode":int}) => {  }
     ///
@@ -130,12 +130,12 @@ class JPush {
       final Map<dynamic, dynamic> result = await _channel.invokeMethod('getAllTags');
       return result;
     }
-    
+
     ///
     /// 重置 alias.
-    /// 
+    ///
     /// @param {String} alias
-    /// 
+    ///
     /// @param {Function} success = ({"alias":String}) => {  }
     /// @param {Function} fail = ({"errorCode":int}) => {  }
     ///
@@ -146,7 +146,7 @@ class JPush {
 
     ///
     /// 删除原有 alias
-    /// 
+    ///
     /// @param {Function} success = ({"alias":String}) => {  }
     /// @param {Function} fail = ({"errorCode":int}) => {  }
     ///
@@ -158,7 +158,7 @@ class JPush {
     ///
     /// iOS Only
     /// 设置应用 Badge（小红点）
-    /// 
+    ///
     /// @param {Int} badge
     ///
     Future setBadge(int badge) async {
@@ -171,21 +171,21 @@ class JPush {
     Future stopPush() async {
       await _channel.invokeMethod('stopPush');
     }
-    
+
     ///
     /// 恢复推送功能。
     ///
     Future resumePush() async {
       await _channel.invokeMethod('resumePush');
     }
-    
+
     ///
     /// 清空通知栏上的所有通知。
     ///
     Future clearAllNotifications() async {
       await _channel.invokeMethod('clearAllNotifications');
     }
-    
+
     ///
     /// iOS Only
     /// 点击推送启动应用的时候原生会将该 notification 缓存起来，该方法用于获取缓存 notification
@@ -200,7 +200,7 @@ class JPush {
 
     ///
     /// 获取 RegistrationId, JPush 可以通过制定 RegistrationId 来进行推送。
-    /// 
+    ///
     /// @param {Function} callback = (String) => {}
     ///
     Future<String> getRegistrationID() async {
@@ -258,7 +258,7 @@ class LocalNotification {
   final int id;
   final String title;
   final String content;
-  final Map<String, String> extras;//?
+  final Map<String, String> extra;//?
   final DateTime fireTime;
   final int badge;//?
   final String soundName;//?
@@ -270,11 +270,11 @@ class LocalNotification {
     @required this.content,
     @required this.fireTime,
     this.buildId,
-    this.extras,
+    this.extra,
     this.badge = 0,
     this.soundName,
     this.subtitle
-  }): 
+  }):
   assert(id != null),
   assert(title != null),
   assert(content != null),
@@ -282,16 +282,16 @@ class LocalNotification {
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
-      'id': id, 
+      'id': id,
       'title': title,
       'content': content,
       'fireTime': fireTime.millisecondsSinceEpoch,
       'buildId': buildId,
-      'extras': extras,
+      'extra': extra,
       'badge': badge,
       'soundName': soundName,
       'subtitle': subtitle
-    };
+    }..removeWhere((key, value)=>value==null);
   }
 
 }

@@ -424,8 +424,8 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 }
 
 - (void)applicationDidBecomeActive:(UIApplication *)application {
-//  application.applicationIconBadgeNumber = 1;
-//  application.applicationIconBadgeNumber = 0;
+ application.applicationIconBadgeNumber = 1;
+ application.applicationIconBadgeNumber = 0;
 }
 
 - (bool)application:(UIApplication *)application
