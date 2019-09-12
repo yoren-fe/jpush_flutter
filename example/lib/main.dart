@@ -23,7 +23,7 @@ final JPush jpush = new JPush();
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
     String platformVersion;
-    
+
 
     // Platform messages may fail, so we use a try/catch PlatformException.
     jpush.getRegistrationID().then((rid) {
@@ -44,7 +44,7 @@ final JPush jpush = new JPush();
       badge: true));
 
     try {
-      
+
       jpush.addEventHandler(
         onReceiveNotification: (Map<String, dynamic> message) async {
         print("flutter onReceiveNotification: $message");
@@ -93,9 +93,9 @@ final JPush jpush = new JPush();
         body: new Center(
           child: new Column(
             children:[
-              new Text('result: $debugLable\n'), 
+              new Text('result: $debugLable\n'),
               new FlatButton(
-              child: new Text('sendLocalNotification\n'), 
+              child: new Text('sendLocalNotification\n'),
               onPressed: () {
                 // 三秒后出发本地推送
                 var fireDate = DateTime.fromMillisecondsSinceEpoch(DateTime.now().millisecondsSinceEpoch + 3000);
@@ -107,7 +107,7 @@ final JPush jpush = new JPush();
                     fireTime: fireDate,
                     subtitle: 'fasf',
                     badge: 5,
-                    extras: {"fa": "0"}
+                    extra: {"fa": "0"}
                   );
                 jpush.sendLocalNotification(localNotification).then((res) {
                   setState(() {
@@ -117,9 +117,9 @@ final JPush jpush = new JPush();
 
               }),
               new FlatButton(
-                child: new Text('getLaunchAppNotification\n'), 
+                child: new Text('getLaunchAppNotification\n'),
                 onPressed: () {
-                  
+
                   jpush.getLaunchAppNotification().then((map) {
                     setState(() {
                       debugLable = "getLaunchAppNotification success: $map";
@@ -133,12 +133,12 @@ final JPush jpush = new JPush();
 
                 }),
               new FlatButton(
-              child: new Text('applyPushAuthority\n'), 
+              child: new Text('applyPushAuthority\n'),
               onPressed: () {
                 jpush.applyPushAuthority(NotificationSettingsIOS(badge: true, alert: true, sound: true));
               }),
               new FlatButton(
-                child: new Text('setTags\n'), 
+                child: new Text('setTags\n'),
                 onPressed: () {
                   jpush.setTags(["lala","haha"]).then((map) {
                     var tags = map['tags'];
@@ -153,7 +153,7 @@ final JPush jpush = new JPush();
                   }) ;
                 }),
               new FlatButton(
-              child: new Text('cleanTags\n'), 
+              child: new Text('cleanTags\n'),
               onPressed: () {
                     jpush.cleanTags().then((map) {
                     var tags = map['tags'];
@@ -168,9 +168,9 @@ final JPush jpush = new JPush();
                   }) ;
               }),
               new FlatButton(
-                child: new Text('addTags\n'), 
+                child: new Text('addTags\n'),
                 onPressed: () {
-                  
+
                     jpush.addTags(["lala","haha"]).then((map) {
                     var tags = map['tags'];
                     setState(() {
@@ -185,9 +185,9 @@ final JPush jpush = new JPush();
 
                 }),
               new FlatButton(
-                child: new Text('deleteTags\n'), 
+                child: new Text('deleteTags\n'),
                 onPressed: () {
-                  
+
                   jpush.deleteTags(["lala","haha"]).then((map) {
                     var tags = map['tags'];
                     setState(() {
@@ -202,9 +202,9 @@ final JPush jpush = new JPush();
 
                 }),
               new FlatButton(
-                child: new Text('getAllTags\n'), 
+                child: new Text('getAllTags\n'),
                 onPressed: () {
-                  
+
                   jpush.getAllTags().then((map) {
                     setState(() {
                       debugLable = "getAllTags success: $map";
@@ -218,9 +218,9 @@ final JPush jpush = new JPush();
 
                 }),
               new FlatButton(
-                child: new Text('setAlias\n'), 
+                child: new Text('setAlias\n'),
                 onPressed: () {
-                  
+
                   jpush.setAlias("thealias11").then((map) {
                     setState(() {
                       debugLable = "setAlias success: $map";
@@ -234,9 +234,9 @@ final JPush jpush = new JPush();
 
                 }),
               new FlatButton(
-                child: new Text('deleteAlias\n'), 
+                child: new Text('deleteAlias\n'),
                 onPressed: () {
-                  
+
                   jpush.deleteAlias().then((map) {
                     setState(() {
                       debugLable = "deleteAlias success: $map";
@@ -250,9 +250,9 @@ final JPush jpush = new JPush();
 
                 }),
               new FlatButton(
-                child: new Text('setBadge\n'), 
+                child: new Text('setBadge\n'),
                 onPressed: () {
-                  
+
                   jpush.setBadge(66).then((map) {
                     setState(() {
                       debugLable = "setBadge success: $map";
@@ -266,31 +266,31 @@ final JPush jpush = new JPush();
 
                 }),
               new FlatButton(
-                child: new Text('stopPush\n'), 
+                child: new Text('stopPush\n'),
                 onPressed: () {
-                  
+
                   jpush.stopPush();
 
                 }),
               new FlatButton(
-                child: new Text('resumePush\n'), 
+                child: new Text('resumePush\n'),
                 onPressed: () {
-                  
+
                   jpush.resumePush();
 
                 }),
               new FlatButton(
-                child: new Text('clearAllNotifications\n'), 
+                child: new Text('clearAllNotifications\n'),
                 onPressed: () {
-                  
+
                   jpush.clearAllNotifications();
 
                 }),
-              
-                
+
+
             ]
           )
-          
+
         ),
       ),
     );
