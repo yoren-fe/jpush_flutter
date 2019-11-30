@@ -400,7 +400,7 @@ packages:
       name: watcher
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "0.9.7+12"
+    version: "0.9.7+13"
   web_socket_channel:
     dependency: transitive
     description:
