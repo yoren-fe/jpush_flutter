@@ -8,7 +8,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.5.2'
+        classpath 'com.android.tools.build:gradle:3.5.3'
     }
 }
 
@@ -33,13 +33,16 @@ android {
     }
 }
 
+def jpushVersion = '3.5.0'
+def jcoreVersion = '2.2.4'
+
 dependencies {
-    implementation 'cn.jiguang.sdk:jpush:3.4.1'
-    implementation 'cn.jiguang.sdk:jcore:2.2.4'
-    releaseImplementation "cn.jiguang.sdk.plugin:xiaomi:3.4.1"
-    releaseImplementation "cn.jiguang.sdk.plugin:huawei:3.4.1"
-    releaseImplementation "cn.jiguang.sdk.plugin:meizu:3.4.1"
-    releaseImplementation "cn.jiguang.sdk.plugin:oppo:3.4.1"
-    releaseImplementation "cn.jiguang.sdk.plugin:vivo:3.4.1"
+    implementation "cn.jiguang.sdk:jpush:$jpushVersion"
+    implementation "cn.jiguang.sdk:jcore:$jcoreVersion"
+    releaseImplementation "cn.jiguang.sdk.plugin:xiaomi:$jpushVersion"
+    releaseImplementation "cn.jiguang.sdk.plugin:huawei:$jpushVersion"
+    releaseImplementation "cn.jiguang.sdk.plugin:meizu:$jpushVersion"
+    releaseImplementation "cn.jiguang.sdk.plugin:oppo:$jpushVersion"
+    releaseImplementation "cn.jiguang.sdk.plugin:vivo:$jpushVersion"
     implementation 'androidx.annotation:annotation:1.1.0'
 }
