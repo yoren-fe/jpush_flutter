@@ -34,7 +34,7 @@ android {
 }
 
 def jpushVersion = '3.5.4'
-def jcoreVersion = '2.2.4'
+def jcoreVersion = '2.2.8'
 
 dependencies {
     implementation "cn.jiguang.sdk:jpush:$jpushVersion"
