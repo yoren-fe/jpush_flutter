@@ -8,7 +8,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.5.3'
+        classpath 'com.android.tools.build:gradle:4.0.1'
     }
 }
 
@@ -33,8 +33,8 @@ android {
     }
 }
 
-def jpushVersion = '3.6.6'
-def jcoreVersion = '2.3.8'
+def jpushVersion = '3.8.0'
+def jcoreVersion = '2.5.1'
 
 dependencies {
     implementation "cn.jiguang.sdk:jpush:$jpushVersion"
