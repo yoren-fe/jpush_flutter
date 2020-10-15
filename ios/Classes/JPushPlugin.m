@@ -150,8 +150,6 @@ static NSMutableArray<FlutterResult>* getRidResults;
     }
 }
 
-
-
 - (void)setup:(FlutterMethodCall*)call result:(FlutterResult)result {
     NSDictionary *arguments = call.arguments;
     NSNumber *debug = arguments[@"debug"];
