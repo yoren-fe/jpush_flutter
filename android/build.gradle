@@ -5,6 +5,7 @@ buildscript {
     repositories {
         google()
         jcenter()
+        mavenCentral()
     }
 
     dependencies {
@@ -16,6 +17,7 @@ rootProject.allprojects {
     repositories {
         google()
         jcenter()
+        mavenCentral()
     }
 }
 
@@ -33,8 +35,8 @@ android {
     }
 }
 
-def jpushVersion = '3.8.5'
-def jcoreVersion = '2.5.5'
+def jpushVersion = '4.0.6'
+def jcoreVersion = '2.7.8'
 
 dependencies {
     implementation "cn.jiguang.sdk:jpush:$jpushVersion"
