@@ -10,15 +10,14 @@ A new flutter plugin project.
                        DESC
   s.homepage         = 'http://example.com'
   s.license          = { :file => '../LICENSE' }
-  s.author           = { 'huminios' => '380108184@qq.com' }
+  s.author           = { 'xudong.rao' => 'xudong.rao@outlook.com' }
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
   s.public_header_files = 'Classes/**/*.h'
   s.dependency 'Flutter'
   s.dependency 'JCore','2.6.2'
-  s.dependency 'JPush','3.5.2'
-
+  s.dependency 'JPush','3.6.1'
+  
   s.ios.deployment_target = '8.0'
   s.static_framework = true
 end
-

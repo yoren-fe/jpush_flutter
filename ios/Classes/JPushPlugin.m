@@ -5,6 +5,8 @@
 
 #import <JPush/JPUSHService.h>
 
+#define JPLog(fmt, ...) NSLog((@"| JPUSH | Flutter | iOS | " fmt), ##__VA_ARGS__)
+
 @interface NSError (FlutterError)
 @property(readonly, nonatomic) FlutterError *flutterError;
 @end
@@ -27,6 +29,7 @@ static NSMutableArray<FlutterResult>* getRidResults;
 
 @implementation JPushPlugin {
     NSDictionary *_launchNotification;
+    NSDictionary *_completeLaunchNotification;
     BOOL _isJPushDidLogin;
     JPAuthorizationOptions notificationTypes;
 }
@@ -111,6 +114,8 @@ static NSMutableArray<FlutterResult>* getRidResults;
 }
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
+    JPLog(@"handleMethodCall:%@",call.method);
+    
     if ([@"getPlatformVersion" isEqualToString:call.method]) {
         result([@"iOS " stringByAppendingString:[[UIDevice currentDevice] systemVersion]]);
     } else if([@"setup" isEqualToString:call.method]) {
@@ -136,21 +141,32 @@ static NSMutableArray<FlutterResult>* getRidResults;
     } else if([@"stopPush" isEqualToString:call.method]) {
         [self stopPush:call result:result];
     } else if([@"resumePush" isEqualToString:call.method]) {
-        [self applyPushAuthority:call result:result];
+        JPLog(@"ios platform not support resume push.");
+        //[self applyPushAuthority:call result:result];
     } else if([@"clearAllNotifications" isEqualToString:call.method]) {
         [self clearAllNotifications:call result:result];
+    } else if ([@"clearNotification" isEqualToString:call.method]) {
+        [self clearNotification:call result:result];
     } else if([@"getLaunchAppNotification" isEqualToString:call.method]) {
         [self getLaunchAppNotification:call result:result];
     } else if([@"getRegistrationID" isEqualToString:call.method]) {
         [self getRegistrationID:call result:result];
     } else if([@"sendLocalNotification"isEqualToString:call.method]) {
         [self sendLocalNotification:call result:result];
+    } else if([@"isNotificationEnabled"isEqualToString:call.method]) {
+        [self isNotificationEnabled:call result:result];
+    } else if([@"openSettingsForNotification"isEqualToString:call.method]) {
+        [self openSettingsForNotification];
     } else{
         result(FlutterMethodNotImplemented);
     }
 }
 
+
+
+
 - (void)setup:(FlutterMethodCall*)call result:(FlutterResult)result {
+    JPLog(@"setup:");
     NSDictionary *arguments = call.arguments;
     NSNumber *debug = arguments[@"debug"];
     if ([debug boolValue]) {
@@ -159,13 +175,14 @@ static NSMutableArray<FlutterResult>* getRidResults;
         [JPUSHService setLogOFF];
     }
     
-    [JPUSHService setupWithOption:_launchNotification
+    [JPUSHService setupWithOption:_completeLaunchNotification
                            appKey:arguments[@"appKey"]
                           channel:arguments[@"channel"]
                  apsForProduction:[arguments[@"production"] boolValue]];
 }
 
 - (void)applyPushAuthority:(FlutterMethodCall*)call result:(FlutterResult)result {
+    JPLog(@"applyPushAuthority:%@",call.arguments);
     notificationTypes = 0;
     NSDictionary *arguments = call.arguments;
     if ([arguments[@"sound"] boolValue]) {
@@ -183,6 +200,7 @@ static NSMutableArray<FlutterResult>* getRidResults;
 }
 
 - (void)setTags:(FlutterMethodCall*)call result:(FlutterResult)result {
+    JPLog(@"setTags:%@",call.arguments);
     NSSet *tagSet;
     
     if (call.arguments != NULL) {
@@ -200,6 +218,7 @@ static NSMutableArray<FlutterResult>* getRidResults;
 }
 
 - (void)cleanTags:(FlutterMethodCall*)call result:(FlutterResult)result {
+    JPLog(@"cleanTags:");
     [JPUSHService cleanTags:^(NSInteger iResCode, NSSet *iTags, NSInteger seq) {
         if (iResCode == 0) {
             result(@{@"tags": iTags ? [iTags allObjects] : @[]});
@@ -211,6 +230,7 @@ static NSMutableArray<FlutterResult>* getRidResults;
 }
 
 - (void)addTags:(FlutterMethodCall*)call result:(FlutterResult)result {
+    JPLog(@"addTags:%@",call.arguments);
     NSSet *tagSet;
     
     if (call.arguments != NULL) {
@@ -228,6 +248,7 @@ static NSMutableArray<FlutterResult>* getRidResults;
 }
 
 - (void)deleteTags:(FlutterMethodCall*)call result:(FlutterResult)result {
+    JPLog(@"deleteTags:%@",call.arguments);
     NSSet *tagSet;
     
     if (call.arguments != NULL) {
@@ -245,6 +266,7 @@ static NSMutableArray<FlutterResult>* getRidResults;
 }
 
 - (void)getAllTags:(FlutterMethodCall*)call result:(FlutterResult)result {
+    JPLog(@"getAllTags:");
     [JPUSHService getAllTags:^(NSInteger iResCode, NSSet *iTags, NSInteger seq) {
         if (iResCode == 0) {
             result(@{@"tags": iTags ? [iTags allObjects] : @[]});
@@ -256,6 +278,7 @@ static NSMutableArray<FlutterResult>* getRidResults;
 }
 
 - (void)setAlias:(FlutterMethodCall*)call result:(FlutterResult)result {
+    JPLog(@"setAlias:%@",call.arguments);
     NSString *alias = call.arguments;
     [JPUSHService setAlias:alias completion:^(NSInteger iResCode, NSString *iAlias, NSInteger seq) {
         if (iResCode == 0) {
@@ -268,6 +291,7 @@ static NSMutableArray<FlutterResult>* getRidResults;
 }
 
 - (void)deleteAlias:(FlutterMethodCall*)call result:(FlutterResult)result {
+    JPLog(@"deleteAlias:%@",call.arguments);
     [JPUSHService deleteAlias:^(NSInteger iResCode, NSString *iAlias, NSInteger seq) {
         if (iResCode == 0) {
             result(@{@"alias": iAlias ?: @""});
@@ -279,24 +303,59 @@ static NSMutableArray<FlutterResult>* getRidResults;
 }
 
 - (void)setBadge:(FlutterMethodCall*)call result:(FlutterResult)result {
-    NSNumber *badge = call.arguments;
-    [[UIApplication sharedApplication] setApplicationIconBadgeNumber: badge.integerValue];
-    [JPUSHService setBadge: badge.integerValue > 0 ? badge.integerValue: 0];
+    JPLog(@"setBadge:%@",call.arguments);
+    NSInteger badge = [call.arguments[@"badge"] integerValue];
+    if (badge < 0) {
+        badge = 0;
+    }
+    [[UIApplication sharedApplication] setApplicationIconBadgeNumber: badge];
+    [JPUSHService setBadge: badge];
 }
 
 - (void)stopPush:(FlutterMethodCall*)call result:(FlutterResult)result {
+    JPLog(@"stopPush:");
     [[UIApplication sharedApplication] unregisterForRemoteNotifications];
 }
-
 - (void)clearAllNotifications:(FlutterMethodCall*)call result:(FlutterResult)result {
-    [[UIApplication sharedApplication] setApplicationIconBadgeNumber: 0];
+    JPLog(@"clearAllNotifications:");
+    
+    if (@available(iOS 10.0, *)) {
+        //iOS 10 以上支持
+        JPushNotificationIdentifier *identifier = [[JPushNotificationIdentifier alloc] init];
+        identifier.identifiers = nil;
+        identifier.delivered = YES;  //等于 YES 则移除所有在通知中心显示的，等于 NO 则为移除所有待推送的
+        [JPUSHService removeNotification:identifier];
+    } else {
+        // iOS 10 以下移除所有推送；iOS 10 以上移除所有在通知中心显示推送和待推送请求
+        [JPUSHService removeNotification:nil];
+    }
+}
+- (void)clearNotification:(FlutterMethodCall*)call result:(FlutterResult)result {
+    JPLog(@"clearNotification:");
+    
+    NSNumber *notificationId = call.arguments;
+    if (!notificationId) {
+        return ;
+    }
+    JPushNotificationIdentifier *identifier = [[JPushNotificationIdentifier alloc] init];
+    identifier.identifiers = @[notificationId.stringValue];
+    
+    if (@available(iOS 10.0, *)) {
+        //iOS 10 以上有效，等于 YES 则在通知中心显示的里面移除，等于 NO 则为在待推送的里面移除；iOS 10 以下无效
+        identifier.delivered = YES;
+    } else {
+        // Fallback on earlier versions
+    }
+    [JPUSHService removeNotification:identifier];
 }
 
 - (void)getLaunchAppNotification:(FlutterMethodCall*)call result:(FlutterResult)result {
+    JPLog(@"getLaunchAppNotification");
     result(_launchNotification == nil ? @{}: _launchNotification);
 }
 
 - (void)getRegistrationID:(FlutterMethodCall*)call result:(FlutterResult)result {
+    JPLog(@"getRegistrationID:");
 #if TARGET_IPHONE_SIMULATOR//模拟器
     NSLog(@"simulator can not get registrationid");
     result(@"");
@@ -318,6 +377,7 @@ static NSMutableArray<FlutterResult>* getRidResults;
 }
 
 - (void)sendLocalNotification:(FlutterMethodCall*)call result:(FlutterResult)result {
+    JPLog(@"sendLocalNotification:%@",call.arguments);
     JPushNotificationContent *content = [[JPushNotificationContent alloc] init];
     NSDictionary *params = call.arguments;
     if (params[@"title"]) {
@@ -382,6 +442,30 @@ static NSMutableArray<FlutterResult>* getRidResults;
     result(@[@[]]);
 }
 
+/// 检查当前应用的通知开关是否开启
+- (void)isNotificationEnabled:(FlutterMethodCall*)call result:(FlutterResult)result  {
+    JPLog(@"isNotificationEnabled:");
+    [JPUSHService requestNotificationAuthorization:^(JPAuthorizationStatus status) {
+        BOOL isEnabled = NO;
+        if (status == JPAuthorizationStatusAuthorized) {
+            isEnabled = YES;
+        }
+        
+        NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:isEnabled],@"isEnabled", nil];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            result(dict);
+        });
+    }];
+   
+    
+}
+- (void)openSettingsForNotification {
+    JPLog(@"openSettingsForNotification:");
+    [JPUSHService openSettingsForNotification:^(BOOL success) {
+        JPLog(@"openSettingsForNotification: %@",@(success));
+    }];
+}
+
 
 
 - (void)dealloc {
@@ -392,9 +476,8 @@ static NSMutableArray<FlutterResult>* getRidResults;
 
 #pragma mark - AppDelegate
 
-- (BOOL)application:(UIApplication *)application
-didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    _completeLaunchNotification = launchOptions;
     if (launchOptions != nil) {
         _launchNotification = launchOptions[UIApplicationLaunchOptionsRemoteNotificationKey];
         _launchNotification = [self jpushFormatAPNSDic:_launchNotification.copy];
@@ -414,34 +497,58 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
         }
         _launchNotification = localNotificationEvent;
     }
+    //[self performSelector:@selector(addNotificationWithDateTrigger) withObject:nil afterDelay:2];
     return YES;
 }
+- (void)addNotificationWithDateTrigger {
+  
+    JPushNotificationTrigger *trigger = [[JPushNotificationTrigger alloc] init];
+    
+    if (@available(iOS 10.0, *)) {
+        trigger.timeInterval = 10;
+    } else {
+        NSDate *fireDate = [NSDate dateWithTimeIntervalSinceNow:10];
+        trigger.fireDate = fireDate;
+    }
+    
+    JPushNotificationContent *content = [[JPushNotificationContent alloc] init];
+    content.title = @"title";
+    content.subtitle = @"subtitle";
+    content.body = @"body";
+    content.badge = @(1);
+    content.action = @"action";
+    content.categoryIdentifier = @"categoryIdentifier";
+    content.threadIdentifier = @"threadIdentifier";
+    
+  JPushNotificationRequest *request = [[JPushNotificationRequest alloc] init];
+  request.content = content;
+  request.trigger = trigger;
+  request.completionHandler = ^(id result) {
+    // iOS10以上成功则result为UNNotificationRequest对象，失败则result为nil
+    // iOS10以下成功result为UILocalNotification对象，失败则result为nil
+    if (result) {
+      NSLog(@"添加日期通知成功 --- %@", result);
+    }
+  };
+  request.requestIdentifier = @"123";
+  [JPUSHService addNotification:request];
+}
+
 
 - (void)applicationDidEnterBackground:(UIApplication *)application {
     //  _resumingFromBackground = YES;
 }
 
 - (void)applicationDidBecomeActive:(UIApplication *)application {
-    application.applicationIconBadgeNumber = 1;
-    application.applicationIconBadgeNumber = 0;
+    //  application.applicationIconBadgeNumber = 1;
+    //  application.applicationIconBadgeNumber = 0;
 }
 
-- (bool)application:(UIApplication *)application
-didReceiveRemoteNotification:(NSDictionary *)userInfo
-fetchCompletionHandler:(void (^)(UIBackgroundFetchResult result))completionHandler {
-    
-    [_channel invokeMethod:@"onReceiveNotification" arguments:userInfo];
-    completionHandler(UIBackgroundFetchResultNoData);
-    return YES;
-}
-
-- (void)application:(UIApplication *)application
-didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
+- (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
     [JPUSHService registerDeviceToken:deviceToken];
 }
 
-- (void)application:(UIApplication *)application
-didRegisterUserNotificationSettings:(UIUserNotificationSettings *)notificationSettings {
+- (void)application:(UIApplication *)application didRegisterUserNotificationSettings:(UIUserNotificationSettings *)notificationSettings {
     NSDictionary *settingsDictionary = @{
         @"sound" : [NSNumber numberWithBool:notificationSettings.types & UIUserNotificationTypeSound],
         @"badge" : [NSNumber numberWithBool:notificationSettings.types & UIUserNotificationTypeBadge],
@@ -450,28 +557,103 @@ didRegisterUserNotificationSettings:(UIUserNotificationSettings *)notificationSe
     [_channel invokeMethod:@"onIosSettingsRegistered" arguments:settingsDictionary];
 }
 
+- (BOOL)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
+    JPLog(@"application:didReceiveRemoteNotification:fetchCompletionHandler");
+    
+    [JPUSHService handleRemoteNotification:userInfo];
+    [_channel invokeMethod:@"onReceiveNotification" arguments:userInfo];
+    completionHandler(UIBackgroundFetchResultNewData);
+    return YES;
+}
 
+// iOS 10 以下点击本地通知
+-(void)application:(UIApplication *)application didReceiveLocalNotification:(UILocalNotification *)notification {
+    JPLog(@"application:didReceiveLocalNotification:");
+    
+    NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+    NSString *title = @"";
+    if (@available(iOS 8.2, *)) {
+        title = notification.alertTitle;
+    } else {
+        // Fallback on earlier versions
+    }
+    
+    NSString *body = notification.alertBody;
+    NSString *action = notification.alertAction;
+    
+    [dic setValue:title?:@"" forKey:@"title"];
+    [dic setValue:body?:@"" forKey:@"body"];
+    [dic setValue:action?:@"" forKey:@"action"];
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self.channel invokeMethod:@"onOpenNotification" arguments:dic];
+    });
+}
 
 - (void)jpushNotificationCenter:(UNUserNotificationCenter *)center willPresentNotification:(UNNotification *)notification withCompletionHandler:(void (^)(NSInteger))completionHandler  API_AVAILABLE(ios(10.0)){
-    
+    JPLog(@"jpushNotificationCenter:willPresentNotification::");
     NSDictionary * userInfo = notification.request.content.userInfo;
     if([notification.request.trigger isKindOfClass:[UNPushNotificationTrigger class]]) {
         [JPUSHService handleRemoteNotification:userInfo];
         [_channel invokeMethod:@"onReceiveNotification" arguments: [self jpushFormatAPNSDic:userInfo]];
+    }else{
+        JPLog(@"iOS10 前台收到本地通知:userInfo：%@",userInfo);
     }
     
     completionHandler(notificationTypes);
 }
 
 - (void)jpushNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse *)response withCompletionHandler:(void (^)())completionHandler  API_AVAILABLE(ios(10.0)){
+    JPLog(@"jpushNotificationCenter:didReceiveNotificationResponse::");
     NSDictionary * userInfo = response.notification.request.content.userInfo;
     if([response.notification.request.trigger isKindOfClass:[UNPushNotificationTrigger class]]) {
         [JPUSHService handleRemoteNotification:userInfo];
         [_channel invokeMethod:@"onOpenNotification" arguments: [self jpushFormatAPNSDic:userInfo]];
+    }else{
+        // iOS 10 以上点击本地通知
+        JPLog(@"iOS10 点击本地通知");
+        NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+        NSString *identifier = response.notification.request.identifier;
+        NSString *body = response.notification.request.content.body;
+        NSString *categoryIdentifier = response.notification.request.content.categoryIdentifier;
+        NSString *title = response.notification.request.content.title;
+        NSString *subtitle = response.notification.request.content.subtitle;
+        NSString *threadIdentifier = response.notification.request.content.threadIdentifier;
+        
+        [dic setValue:body?:@"" forKey:@"body"];
+        [dic setValue:title?:@"" forKey:@"title"];
+        [dic setValue:subtitle?:@"" forKey:@"subtitle"];
+        [dic setValue:identifier?:@"" forKey:@"identifier"];
+        [dic setValue:threadIdentifier?:@"" forKey:@"threadIdentifier"];
+        [dic setValue:categoryIdentifier?:@"" forKey:@"categoryIdentifier"];
+        if (userInfo && userInfo.count) {
+            NSMutableDictionary *extras = [NSMutableDictionary dictionary];
+            for (NSString *key in userInfo) {
+                extras[key] = userInfo[key];
+            }
+            dic[@"extras"] = extras;
+        }
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self.channel invokeMethod:@"onOpenNotification" arguments:dic];
+        });
     }
     completionHandler();
 }
 
+- (void)jpushNotificationAuthorization:(JPAuthorizationStatus)status withInfo:(NSDictionary *)info {
+   JPLog(@"");
+    BOOL isEnabled = NO;
+    if (status == JPAuthorizationStatusAuthorized) {
+        isEnabled = YES;
+    }
+    
+    NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:isEnabled],@"isEnabled", nil];
+    __weak typeof(self) weakself = self;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        __strong typeof(self) strongself = weakself;
+        [strongself.channel invokeMethod:@"onReceiveNotificationAuthorization" arguments: dict];
+    });
+}
 - (NSMutableDictionary *)jpushFormatAPNSDic:(NSDictionary *)dic {
     NSMutableDictionary *extras = @{}.mutableCopy;
     for (NSString *key in dic) {

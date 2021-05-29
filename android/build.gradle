@@ -3,40 +3,39 @@ version '1.0-SNAPSHOT'
 
 buildscript {
     repositories {
+        mavenCentral()
         google()
         jcenter()
-        mavenCentral()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.1.0'
+        classpath 'com.android.tools.build:gradle:4.1.3'
     }
 }
 
 rootProject.allprojects {
     repositories {
+        mavenCentral()
         google()
         jcenter()
-        mavenCentral()
     }
 }
 
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 29
+    compileSdkVersion 28
 
     defaultConfig {
-        minSdkVersion 16
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        minSdkVersion 17
     }
     lintOptions {
         disable 'InvalidPackage'
     }
 }
 
-def jpushVersion = '4.0.6'
-def jcoreVersion = '2.7.8'
+def jpushVersion = '4.0.9'
+def jcoreVersion = '2.8.2'
 
 dependencies {
     implementation "cn.jiguang.sdk:jpush:$jpushVersion"
